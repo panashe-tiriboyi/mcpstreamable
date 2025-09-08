@@ -20,13 +20,13 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.11.1",
+    "@modelcontextprotocol/sdk": "^1.17.5",
     "express": "^5.1.0",
     "zod": "^3.24.4"
   },
   "devDependencies": {
-    "@types/express": "^5.0.1",
-    "@types/node": "^22.15.17",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.3.1",
     "typescript": "^5.8.3"
   }
 }
