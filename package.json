@@ -9,13 +9,7 @@
     "start": "node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "files": [
-    "build"
-  ],
-  "bin": {
-    "demo": "./dist/server.js"
-  },
-  "keywords": [ ],
+  "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
