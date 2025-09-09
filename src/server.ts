@@ -1,4 +1,8 @@
 import express, { Request, Response } from "express";
+import {
+  queryAzureDevOpsWorkItems,
+  queryAzureDevOpsWorkItemsById,
+} from "./devops.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
@@ -8,84 +12,85 @@ const server = new McpServer({
   version: "1.0.0",
 });
 
-// Get Chuck Norris joke tool
-const getChuckJoke = server.tool(
-  "get-chuck-joke",
-  "Get a random Chuck Norris joke",
-  async () => {
-    const response = await fetch("https://api.chucknorris.io/jokes/random");
-    const data = await response.json();
-    return {
-      content: [
-        {
-          type: "text",
-          text: data.value,
-        },
-      ],
-    };
-  }
-);
-
-// Get Chuck Norris joke by category tool
-const getChuckJokeByCategory = server.tool(
-  "get-chuck-joke-by-category",
-  "Get a random Chuck Norris joke by category",
+// Get DevOps work item tool
+const getDevopsWorkItems = server.tool(
+  "get-devops-work-items",
+  "Get Azure DevOps work items from the last week",
   {
-    category: z.string().describe("Category of the Chuck Norris joke"),
+    organization: z.string().describe("Azure DevOps organization name"),
+    project: z.string().describe("Azure DevOps project name"),
+    personalAccessToken: z
+      .string()
+      .describe("Personal Access Token for Azure DevOps"),
   },
-  async (params: { category: string }) => {
-    const response = await fetch(
-      `https://api.chucknorris.io/jokes/random?category=${params.category}`
-    );
-    const data = await response.json();
-    return {
-      content: [
-        {
-          type: "text",
-          text: data.value,
-        },
-      ],
-    };
+  async (params: {
+    organization: string;
+    project: string;
+    personalAccessToken: string;
+  }) => {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const wiqlQuery = `SELECT * FROM WorkItems WHERE [System.TeamProject] = '${params.project}' AND [System.CreatedDate] > '2025-09-02'`;
+
+    try {
+      const result = await queryAzureDevOpsWorkItems(
+        params.organization,
+        params.project,
+        params.personalAccessToken,
+        wiqlQuery
+      );
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      console.error("Failed to query work items:", error);
+      throw new Error("Failed to retrieve work items from Azure DevOps");
+    }
   }
 );
 
-// Get Chuck Norris joke categories tool
-const getChuckCategories = server.tool(
-  "get-chuck-categories",
-  "Get all available categories for Chuck Norris jokes",
-  async () => {
-    const response = await fetch("https://api.chucknorris.io/jokes/categories");
-    const data = await response.json();
-    return {
-      content: [
-        {
-          type: "text",
-          text: data.join(", "),
-        },
-      ],
-    };
-  }
-);
-
-// Get Dad joke tool
-const getDadJoke = server.tool(
-  "get-dad-joke",
-  "Get a random dad joke",
-  async () => {
-    const response = await fetch("https://icanhazdadjoke.com/", {
-      headers: {
-        Accept: "application/json",
-      },
-    });
-    const data = await response.json();
-    return {
-      content: [
-        {
-          type: "text",
-          text: data.joke,
-        },
-      ],
-    };
+const getDevopsWorkItemById = server.tool(
+  "get-devops-work-item-by-id",
+  "Get Azure DevOps work item by ID",
+  {
+    organization: z.string().describe("Azure DevOps organization name"),
+    project: z.string().describe("Azure DevOps project name"),
+    personalAccessToken: z
+      .string()
+      .describe("Personal Access Token for Azure DevOps"),
+    id: z.string().describe("ID of the Azure DevOps work item"), // <-- Add this line
+  },
+  async (params: {
+    organization: string;
+    project: string;
+    personalAccessToken: string;
+    id: string; // <-- Add this line
+  }) => {
+    try {
+      const result = await queryAzureDevOpsWorkItemsById(
+        params.organization,
+        params.project,
+        params.personalAccessToken,
+        params.id // <-- Pass the id here
+      );
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      console.error("Failed to query work item:", error);
+      throw new Error("Failed to retrieve work item from Azure DevOps");
+    }
   }
 );
 
