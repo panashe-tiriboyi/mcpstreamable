@@ -1,6 +1,24 @@
 import axios from "axios";
 import { WorkItemsResponse } from "./model/workItemsResponse.js";
 import { AzureDevOpsWorkItem } from "./model/azureDevOpsWorkItem.js";
+import NodeCache from "node-cache";
+
+const cache = new NodeCache({
+  stdTTL: 600, // 10 minutes default TTL
+  checkperiod: 120, // Check for expired keys every 2 minutes
+});
+
+// Set cache
+cache.set("key", "value", 300); // 5 minutes TTL
+
+// // Get cache
+// const value = cache.get<string>('key');
+
+// // Check if key exists
+// const hasKey = cache.has('key');
+
+// // Delete key
+// cache.del('key');
 
 interface WiqlQuery {
   query: string;
@@ -14,7 +32,7 @@ async function queryAzureDevOpsWorkItems(
   personalAccessToken: string,
   query: string
 ): Promise<WorkItemsResponse> {
-  const url = `https://dev.azure.com/${organization}/${project}/_apis/wit/wiql?api-version=7.1&$top=10`;
+  const url = `https://dev.azure.com/${organization}/${project}/_apis/wit/wiql?api-version=7.1&$top=19998`;
 
   const requestBody: WiqlQuery = {
     query: query,
@@ -121,6 +139,35 @@ async function queryAzureDevOpsWorkItemsById(
     }
     throw error;
   }
+}
+
+export async function queryAzureDevOpsWorkItemsWithDetails(
+  organization: string,
+  project: string,
+  personalAccessToken: string,
+  wiql: string
+): Promise<AzureDevOpsWorkItem[]> {
+  // Get the list of work items
+  const workItemsResponse = await queryAzureDevOpsWorkItems(
+    organization,
+    project,
+    personalAccessToken,
+    wiql
+  );
+
+  // Fetch details for each work item in parallel
+  const details = await Promise.all(
+    workItemsResponse.workItems.map((item) =>
+      queryAzureDevOpsWorkItemsById(
+        organization,
+        project,
+        personalAccessToken,
+        String(item.id)
+      )
+    )
+  );
+
+  return details;
 }
 
 export {

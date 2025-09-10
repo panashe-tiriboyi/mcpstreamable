@@ -7,6 +7,8 @@ import { dirname } from "path";
 
 export interface Config {
   DevOpsPersonalAccessToken: string;
+  Organization: string;
+  Project: string;
 }
 
 // Get the equivalent of __dirname for ES modules
@@ -35,25 +37,27 @@ console.log("Discovered tools:", tools);
 
 // Call Azure DevOps work items tool
 const config = loadConfig();
-const devOpsResult = await client.callTool({
-  name: "get-devops-work-items",
-  arguments: {
-    organization: "databalk",
-    project: "Debatic",
-    personalAccessToken: config.DevOpsPersonalAccessToken,
-  },
+// const devOpsResult = await client.callTool({
+//   name: "get-devops-work-items",
+// });
+
+// console.log("Azure DevOps work items:", devOpsResult);
+
+// const devOpsResultById = await client.callTool({
+//   name: "get-devops-work-item-by-id",
+//   arguments: {
+//     id: "55401",
+//   },
+// });
+
+// console.log("Azure DevOps work items:", devOpsResultById);
+
+const devopsWorkItemsWithDetails = await client.callTool({
+  name: "get-devops-work-items-with-details",
+  arguments: {}, // <-- pass an empty object
 });
 
-console.log("Azure DevOps work items:", devOpsResult);
-
-const devOpsResultById = await client.callTool({
-  name: "get-devops-work-item-by-id",
-  arguments: {
-    organization: "databalk",
-    project: "Debatic",
-    personalAccessToken: config.DevOpsPersonalAccessToken,
-    id: "55401",
-  },
-});
-
-console.log("Azure DevOps work items:", devOpsResultById);
+console.log(
+  "Azure DevOps work items with details:",
+  devopsWorkItemsWithDetails
+);
