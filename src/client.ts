@@ -15,10 +15,18 @@ export interface Config {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// export function loadConfig(): Config {
+//   const configPath = path.join(__dirname, "..", "appsettings.json");
+//   const configFile = fs.readFileSync(configPath, "utf-8");
+//   return JSON.parse(configFile);
+// }
+
 export function loadConfig(): Config {
-  const configPath = path.join(__dirname, "..", "appsettings.json");
-  const configFile = fs.readFileSync(configPath, "utf-8");
-  return JSON.parse(configFile);
+ return {
+      DevOpsPersonalAccessToken: process.env.DEVOPS_PAT || '',
+      Organization: process.env.DEVOPS_ORG || '',
+      Project: process.env.DEVOPS_PROJECT || ''
+    };
 }
 
 const client = new Client({
