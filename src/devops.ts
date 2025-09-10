@@ -1,24 +1,7 @@
 import axios from "axios";
 import { WorkItemsResponse } from "./model/workItemsResponse.js";
 import { AzureDevOpsWorkItem } from "./model/azureDevOpsWorkItem.js";
-import NodeCache from "node-cache";
 
-const cache = new NodeCache({
-  stdTTL: 600, // 10 minutes default TTL
-  checkperiod: 120, // Check for expired keys every 2 minutes
-});
-
-// Set cache
-cache.set("key", "value", 300); // 5 minutes TTL
-
-// // Get cache
-// const value = cache.get<string>('key');
-
-// // Check if key exists
-// const hasKey = cache.has('key');
-
-// // Delete key
-// cache.del('key');
 
 interface WiqlQuery {
   query: string;
